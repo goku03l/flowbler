@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>flowbler</title>
+<title>Flowchart editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet">
@@ -27,6 +27,7 @@
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
 html,body{height:100%;margin:0}
 body{
   background:var(--bg);color:var(--txt);overflow:hidden;
@@ -42,8 +43,10 @@ header{
 }
 #title{
   font:600 14px/1 inherit;font-family:inherit;color:var(--txt);background:transparent;
-  border:1px solid transparent;border-radius:var(--r);padding:6px 8px;width:190px;margin-right:4px;
+  border:1px solid transparent;border-radius:var(--r);padding:6px 8px;width:160px;margin-right:4px;
 }
+.menu label{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:7px 10px;border-radius:5px;cursor:pointer}
+.menu label:hover{background:var(--hover)}
 #title:hover{border-color:var(--line)}
 #title:focus{outline:none;border-color:var(--accent);background:var(--panel-2)}
 .grp{display:flex;align-items:center;gap:2px;padding-left:6px;margin-left:2px;border-left:1px solid var(--line)}
@@ -243,6 +246,48 @@ kbd{
 .ai-opts label{display:flex;align-items:center;gap:6px;font-size:12.5px}
 .ai-opts select{width:auto}
 
+/* ---------- collaboration ---------- */
+#people{display:flex;align-items:center;margin-right:4px}
+#people:empty{display:none}
+.av{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;border:2px solid var(--panel);margin-left:-6px;cursor:default}
+.av:first-child{margin-left:0}
+.av.me{box-shadow:0 0 0 2px var(--accent)}
+.av.more{background:var(--chrome-3,#6B7280);color:#fff}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#9CA3AF;display:inline-block}
+.live-dot.on{background:#16A34A;box-shadow:0 0 0 3px rgba(22,163,74,.18)}
+.live-dot.wait{background:#D97706}
+.badge{min-width:17px;height:17px;border-radius:9px;background:#DC2626;color:#fff;font-size:10.5px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;padding:0 4px}
+.badge[hidden]{display:none}
+#cursors{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:4}
+.cur{position:absolute;transform:translate(-2px,-2px);transition:left .09s linear, top .09s linear}
+.cur svg{display:block;width:18px;height:18px}
+.cur span{position:absolute;left:14px;top:14px;font-size:11px;font-weight:600;color:#fff;padding:2px 7px;border-radius:9px;white-space:nowrap}
+#activity{
+  position:absolute;right:12px;top:12px;width:300px;max-height:min(70%,560px);z-index:5;display:flex;flex-direction:column;
+  background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.14);
+}
+#activity[hidden]{display:none}
+.act-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line)}
+.act-head h3{margin:0;font-size:13px}
+.act-list{overflow-y:auto;padding:4px 0}
+.act-item{display:flex;gap:9px;padding:8px 12px;cursor:pointer;border:0;background:transparent;width:100%;text-align:left;color:inherit;font:inherit;font-size:12.5px;line-height:1.45}
+.act-item:hover{background:var(--hover)}
+.act-item i{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-top:5px}
+.act-item small{display:block;color:var(--dim);font-size:11px}
+.act-empty{padding:18px 14px;color:var(--dim);font-size:12.5px;line-height:1.5}
+.share-link{display:flex;gap:6px}
+.share-link input{flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.plist{display:flex;flex-direction:column;gap:6px;margin:4px 0}
+.prow{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.vlist{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto}
+.vrow{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;border-bottom:1px solid var(--line)}
+.vrow span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vrow small{color:var(--dim)}
+.steps{margin:4px 0 0;padding-left:18px;line-height:1.6;font-size:12.5px}
+.warnbox{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.5}
+
 /* ---------- help ---------- */
 dialog{
   border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--txt);
@@ -293,18 +338,25 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
       </button>
     </div>
     <div class="grp">
-      <button class="btn" id="bSvg" title="Export as SVG">Export SVG</button>
-      <button class="btn" id="bPng" title="Export as PNG">Export PNG</button>
+      <select id="exportMenu" class="btn" aria-label="Export" title="Export the current canvas">
+        <option value="" selected>Export…</option>
+        <option value="svg">SVG image</option>
+        <option value="png">PNG image</option>
+      </select>
+      <button id="bSvg" hidden></button><button id="bPng" hidden></button>
+    </div>
+    <div class="grp">
+      <span id="people" aria-label="People in this session"></span>
+      <button class="btn" id="bShare" title="Share a live link so others can see and edit"><span class="live-dot" id="liveDot"></span><span id="shareLbl">Share</span></button>
+      <button class="btn" id="bActivity" title="Who changed what" hidden>Activity <span class="badge" id="actBadge" hidden>0</span></button>
     </div>
     <div class="grp">
       <button class="btn primary" id="bAI" title="Describe a diagram and let OpenAI draft it">Generate with AI</button>
     </div>
     <div class="spacer"></div>
     <div class="grp hide-sm">
-      <button class="btn" id="bGrid" aria-pressed="true" title="Show grid">Grid</button>
-      <button class="btn" id="bSnap" aria-pressed="true" title="Snap to grid">Snap</button>
-      <button class="btn" id="bGuides" aria-pressed="true" title="Smart alignment guides — hold Alt to ignore">Guides</button>
-      <button class="btn" id="bMap" aria-pressed="true" title="Overview map">Map</button>
+      <button class="btn" id="bView" aria-haspopup="menu" title="Grid, snapping, guides, minimap">View ▾</button>
+      <span hidden><button id="bGrid"></button><button id="bSnap"></button><button id="bGuides"></button><button id="bMap"></button></span>
     </div>
     <div class="grp">
       <button class="btn" id="bZoomOut" title="Zoom out (Ctrl+−)" aria-label="Zoom out">−</button>
@@ -317,7 +369,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
       </button>
     </div>
     <div class="grp">
-      <button class="btn" id="bHelp" title="Keyboard shortcuts (?)">Shortcuts</button>
+      <button class="btn" id="bHelp" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts" style="font-weight:700;min-width:30px;justify-content:center">?</button>
     </div>
   </header>
 
@@ -332,12 +384,18 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
           </pattern>
         </defs>
         <g id="world"></g>
+        <g id="peers" pointer-events="none"></g>
       </svg>
       <textarea id="editor" spellcheck="false" aria-label="Shape text"></textarea>
       <input id="labelEditor" type="text" aria-label="Connector label" spellcheck="false">
       <div id="hud">Right-drag or Space+drag to pan · select a connector, then drag its white dot to bend it</div>
       <div id="minimap" title="Overview — click or drag to move around"><svg id="miniSvg" width="190" height="126"></svg></div>
       <div class="toast" id="toast"></div>
+      <div id="cursors" aria-hidden="true"></div>
+      <div id="activity" hidden role="log" aria-label="Activity">
+        <div class="act-head"><h3>Activity</h3><button class="btn" id="actClose">Close</button></div>
+        <div class="act-list" id="actList"></div>
+      </div>
     </div>
     <div id="tabs" role="tablist" aria-label="Canvases"></div>
     </div>
@@ -402,8 +460,16 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
     </div>
   </div>
 </dialog>
+<dialog id="shareDlg" class="ai-dlg" aria-labelledby="shareTitle">
+  <div class="dlg-head">
+    <h2 id="shareTitle">Share and work together</h2>
+    <button class="btn" id="shareClose">Close</button>
+  </div>
+  <div class="ai-body" id="shareBody"></div>
+</dialog>
 <input type="file" id="fileIn" accept=".json,application/json" hidden>
 
+<script src="config.js"></script>
 <script>
 (function(){
 "use strict";
@@ -426,6 +492,7 @@ const PAGES  = ["#FFFFFF","#FAF9F6","#F4F1EA","#F1F5F9","#E8F0EC","#2A2B2E","#1E
 
 const TYPES = {
   rect:         {name:"Rectangle", w:140, h:70},
+  frame:        {name:"Group box", w:360, h:240},
   rounded:      {name:"Rounded",   w:140, h:70},
   card:         {name:"Card",      w:230, h:86},
   pill:         {name:"Terminal",  w:140, h:56},
@@ -458,6 +525,7 @@ function outline(t, w, h){
   const P = pts => ["polygon", {points: pts.map(p => p.join(",")).join(" ")}];
   switch(t){
     case "rect":    return {main:[["rect",{x:0,y:0,width:w,height:h}]], deco:[]};
+    case "frame":   return {main:[["rect",{x:0,y:0,width:w,height:h,rx:Math.min(12,h/6,w/6)}]], deco:[]};
     case "rounded":
     case "card":    return {main:[["rect",{x:0,y:0,width:w,height:h,rx:Math.min(10,h/4,w/4)}]], deco:[]};
     case "pill":    return {main:[["rect",{x:0,y:0,width:w,height:h,rx:Math.min(w,h)/2}]], deco:[]};
@@ -513,6 +581,7 @@ function textBox(t, w, h){
     case "arrow":    { const hl=arrowHead(w,h); return {x:p, y:h*.25, w:w-hl*.6-p, h:h*.5}; }
     case "note":     return {x:12, y:12, w:w-24, h:h-24};
     case "card":     return {x:16, y:13, w:w-32, h:h-26};
+    case "frame":    return {x:14, y:10, w:w-28, h:Math.min(44, h-16)};
     case "text":     return {x:4, y:4, w:w-8, h:h-8};
     case "icon":     return {x:-40, y:h+4, w:w+80, h:40};
     default:         return {x:p, y:p*.6, w:w-p*2, h:h-p*1.2};
@@ -732,6 +801,8 @@ function newShape(type, cx, cy){
   };
   if(type === "note") Object.assign(s, {fill:"#FEF3C7", stroke:"#D97706", align:"left", valign:"top"});
   if(type === "text") Object.assign(s, {fill:"none", stroke:"none", align:"left", valign:"top"});
+  if(type === "frame") Object.assign(s, {fill:"none", stroke:"#6B7280", dash:"dashed", strokeWidth:1.5, align:"left", valign:"top",
+                                         bold:true, fontSize:13, textColor:"#4B5563", text:"Group", carry:true, fillOpacity:.35});
   if(type === "card") Object.assign(s, {heading:true, align:"left", valign:"top", fontSize:13,
                                         text:"Title\nWhat this step does"});
   return s;
@@ -859,37 +930,112 @@ function syncDoc(){
 }
 
 function commit(before){
-  if(before != null && before !== snapshot()){
-    undoStack.push(before);
+  const after = snapshot();
+  if(before != null && before !== after){
+    undoStack.push({b:before, a:after});
     if(undoStack.length > 200) undoStack.shift();
     redoStack.length = 0;
+    collabRecord(before, after);
   }
   scheduleSave();
   updateButtons();
+  collabSyncNow();
 }
 function mutate(fn){
   const b = snapshot();
   fn();
   commit(b);
-  render(); renderInspector(); renderTabs();
+  render(); safeInspector(); renderTabs();
 }
 let nudgeBefore = null, nudgeT;
 function flushNudge(){
-  if(nudgeBefore){ clearTimeout(nudgeT); commit(nudgeBefore); nudgeBefore = null; }
+  if(nudgeBefore){ clearTimeout(nudgeT); const b = nudgeBefore; nudgeBefore = null; commit(b); }
+}
+/* Undo only reverses the objects *you* changed, so it never wipes out a collaborator's work. */
+function stable(v){
+  if(v === null || typeof v !== "object") return JSON.stringify(v === undefined ? null : v);
+  if(Array.isArray(v)) return "[" + v.map(stable).join(",") + "]";
+  return "{" + Object.keys(v).filter(k => v[k] !== undefined).sort().map(k => JSON.stringify(k) + ":" + stable(v[k])).join(",") + "}";
+}
+function indexBook(bk){
+  const I = {title: bk.title || "", pages:new Map(), objs:new Map(), order:new Map()};
+  (bk.pages || []).forEach((p, i) => {
+    I.pages.set(p.id, {name:p.name, page:p.page, order:i});
+    I.order.set(p.id, p.shapes.map(s => s.id));
+    p.shapes.forEach((s, j) => I.objs.set(`s|${p.id}|${s.id}`, {o:s, j:stable(s), z:j}));
+    p.edges.forEach(e => I.objs.set(`e|${p.id}|${e.id}`, {o:e, j:stable(e)}));
+  });
+  return I;
+}
+function applyPatchTo(target, fromStr, toStr){
+  const F = indexBook(JSON.parse(fromStr)), T = indexBook(JSON.parse(toStr));
+  const touched = [];
+  if(F.title !== T.title) target.title = T.title;
+  for(const pid of new Set([...F.pages.keys(), ...T.pages.keys()])){
+    const f = F.pages.get(pid), t = T.pages.get(pid);
+    if(stable(f || null) === stable(t || null)) continue;
+    let pg = target.pages.find(x => x.id === pid);
+    if(!t){ if(pg && target.pages.length > 1) target.pages.splice(target.pages.indexOf(pg), 1); continue; }
+    if(!pg){ pg = {id:pid, name:t.name, page:t.page, shapes:[], edges:[]}; target.pages.splice(Math.min(t.order, target.pages.length), 0, pg); }
+    else {
+      pg.name = t.name; pg.page = t.page;
+      if(f && f.order !== t.order){ target.pages.splice(target.pages.indexOf(pg), 1); target.pages.splice(Math.min(t.order, target.pages.length), 0, pg); }
+    }
+    touched.push(pid);
+  }
+  for(const key of new Set([...F.objs.keys(), ...T.objs.keys()])){
+    const f = F.objs.get(key), t = T.objs.get(key);
+    if((f && f.j) === (t && t.j)) continue;
+    const [kind, pid, id] = key.split("|");
+    const pg = target.pages.find(x => x.id === pid);
+    if(!pg) continue;
+    const arr = kind === "s" ? pg.shapes : pg.edges;
+    const i = arr.findIndex(o => o.id === id);
+    if(!t){ if(i >= 0) arr.splice(i, 1); }
+    else {
+      const o = JSON.parse(JSON.stringify(t.o));
+      if(i >= 0) arr[i] = o;
+      else if(kind === "s") arr.splice(Math.min(t.z, arr.length), 0, o);
+      else arr.push(o);
+    }
+    touched.push(pid);
+  }
+  for(const [pid, tOrd] of T.order){
+    const fOrd = F.order.get(pid);
+    if(!fOrd) continue;
+    const both = new Set(fOrd.filter(id => tOrd.includes(id)));
+    if(fOrd.filter(id => both.has(id)).join() === tOrd.filter(id => both.has(id)).join()) continue;
+    const pg = target.pages.find(x => x.id === pid);
+    if(!pg) continue;
+    const rank = new Map(tOrd.map((id, i) => [id, i]));
+    pg.shapes.sort((x, y) => (rank.has(x.id) ? rank.get(x.id) : 1e9) - (rank.has(y.id) ? rank.get(y.id) : 1e9));
+    touched.push(pid);
+  }
+  return touched;
+}
+function applyPatch(fromStr, toStr){
+  const touched = applyPatchTo(book, fromStr, toStr);
+  if(touched.length && !touched.includes(book.active) && book.pages.some(p => p.id === touched[0])) book.active = touched[0];
 }
 function undo(){
   flushNudge();
   if(!undoStack.length) return;
-  redoStack.push(snapshot());
-  book = JSON.parse(undoStack.pop());
+  const e = undoStack.pop(), cur = snapshot();
+  applyPatch(e.a, e.b);
+  redoStack.push(e);
   afterDocSwap();
+  collabRecord(cur, snapshot(), "undid: ");
+  collabSyncNow();
 }
 function redo(){
   flushNudge();
   if(!redoStack.length) return;
-  undoStack.push(snapshot());
-  book = JSON.parse(redoStack.pop());
+  const e = redoStack.pop(), cur = snapshot();
+  applyPatch(e.b, e.a);
+  undoStack.push(e);
   afterDocSwap();
+  collabRecord(cur, snapshot(), "redid: ");
+  collabSyncNow();
 }
 function afterDocSwap(){
   const prev = doc && doc.id;
@@ -902,7 +1048,12 @@ function afterDocSwap(){
   const ids = new Set([...doc.shapes.map(s=>s.id), ...doc.edges.map(e=>e.id)]);
   sel = new Set([...sel].filter(id => ids.has(id)));
   $("title").value = book.title || "Untitled diagram";
-  scheduleSave(); updateButtons(); render(); renderInspector(); renderTabs();
+  scheduleSave(); updateButtons(); render(); safeInspector(); renderTabs();
+}
+function safeInspector(){
+  const a = document.activeElement;
+  if(a && $("inspector").contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.type !== "checkbox") return;
+  renderInspector();
 }
 function updateButtons(){
   $("bUndo").disabled = !undoStack.length;
@@ -1120,7 +1271,12 @@ function markerFor(defsEl, color){
 
 function drawShape(parent, s, opt){
   const g = el("g", {transform:`translate(${s.x},${s.y})`, class: opt.export ? null : "shape", "data-id": opt.export ? null : s.id}, parent);
-  if(!opt.export){
+  const isFrame = s.type === "frame";
+  if(!opt.export && isFrame){
+    el("rect", {x:0, y:0, width:s.w, height:s.h, rx:10, fill:"none", stroke:"transparent", "stroke-width":14/view.k, "pointer-events":"stroke"}, g);
+    const lw = measure(String(s.text || " ").split("\n")[0], `700 ${s.fontSize}px ${FONT}`) + 30;
+    el("rect", {x:0, y:0, width:Math.min(s.w, Math.max(60, lw)), height:Math.min(s.h, s.fontSize*1.3 + 20), fill:"transparent"}, g);
+  } else if(!opt.export){
     const pad = 24/view.k;
     el("rect", {x:-pad, y:-pad, width:s.w + pad*2, height:s.h + pad*2, fill:"transparent", class:"halo"}, g);
     el("rect", {x:0, y:0, width:s.w, height:s.h, fill:"transparent"}, g);
@@ -1133,7 +1289,9 @@ function drawShape(parent, s, opt){
     "stroke-width": sw || null,
     "stroke-dasharray": hasStroke ? dashFor(s.dash, sw) : null,
     "stroke-linecap": s.dash === "dotted" ? "round" : null,
-    "stroke-linejoin": "round"
+    "stroke-linejoin": "round",
+    "fill-opacity": isFrame && s.fill !== "none" ? (s.fillOpacity == null ? .35 : s.fillOpacity) : null,
+    "pointer-events": isFrame ? "none" : null
   };
   if(s.type === "icon") drawIcon(g, s);
   else {
@@ -1199,9 +1357,19 @@ function drawEdge(parent, e, opt, defsEl){
 }
 
 function drawContent(parent, opt, defsEl){
-  const eg = el("g", {}, parent), sg = el("g", {}, parent);
+  const fg = el("g", {}, parent), eg = el("g", {}, parent), sg = el("g", {}, parent);
+  const frames = doc.shapes.filter(s => s.type === "frame").sort((a, b) => b.w*b.h - a.w*a.h);
+  for(const f of frames) drawShape(fg, f, opt);
   for(const e of doc.edges) drawEdge(eg, e, opt, defsEl);
-  for(const s of doc.shapes) drawShape(sg, s, opt);
+  for(const s of doc.shapes) if(s.type !== "frame") drawShape(sg, s, opt);
+}
+function contentsOf(f){
+  return doc.shapes.filter(s => s !== f && s.x >= f.x - 1 && s.y >= f.y - 1 && s.x + s.w <= f.x + f.w + 1 && s.y + s.h <= f.y + f.h + 1);
+}
+function withContents(list){
+  const out = new Map(list.map(s => [s.id, s]));
+  for(const f of list) if(f.type === "frame" && f.carry !== false) for(const c of contentsOf(f)) out.set(c.id, c);
+  return [...out.values()];
 }
 
 function luminance(hex){
@@ -1223,6 +1391,7 @@ function render(){
   renderMinimap();
   if(editingId) positionEditor();
   if(editingLabel) positionLabelEditor();
+  collabAfterRender();
 }
 
 function drawOverlay(){
@@ -1387,6 +1556,11 @@ function renderMinimap(){
     el("line", {x1:ox + G.p1.x*sc, y1:oy + G.p1.y*sc, x2:ox + G.p2.x*sc, y2:oy + G.p2.y*sc, stroke:"#9CA3AF", "stroke-width":.6}, m);
   }
   for(const s of doc.shapes){
+    if(s.type === "frame"){
+      el("rect", {x:ox + s.x*sc, y:oy + s.y*sc, width:Math.max(2, s.w*sc), height:Math.max(2, s.h*sc), rx:2,
+                  fill:"none", stroke:"#9CA3AF", "stroke-width":.8, "stroke-dasharray":"2 1.5"}, m);
+      continue;
+    }
     const light = s.fill === "none" || /^#f[a-f0-9]f[a-f0-9]f/i.test(s.fill);
     el("rect", {x:ox + s.x*sc, y:oy + s.y*sc, width:Math.max(2, s.w*sc), height:Math.max(2, s.h*sc), rx:1,
                 fill: light ? "#CBD5E1" : s.fill, stroke: s.stroke === "none" ? "none" : s.stroke, "stroke-width":.5}, m);
@@ -1537,7 +1711,7 @@ svg.addEventListener("pointerdown", ev => {
     if(ev.altKey){ duplicateSelection(0, true); }
     const primary = ev.altKey ? [...sel].find(x => shapeById(x)) : id;
     const orig = new Map();
-    for(const s of selShapes()) orig.set(s.id, {x:s.x, y:s.y});
+    for(const s of withContents(selShapes())) orig.set(s.id, {x:s.x, y:s.y});
     drag = {mode:"move", start:p, orig, primary: orig.has(primary) ? primary : [...orig.keys()][0],
             before, moved:ev.altKey, clicked:id, additive,
             bb0: bbox(selShapes()), others: doc.shapes.filter(s => !orig.has(s.id)), guides:[],
@@ -1615,7 +1789,7 @@ svg.addEventListener("pointermove", ev => {
     }
     for(const [id, oo] of drag.orig){ const s = shapeById(id); if(s){ s.x = oo.x + dx; s.y = oo.y + dy; } }
     for(const bnd of drag.bends || []) bnd.e.points = bnd.pts.map(q => ({x:q.x + dx, y:q.y + dy}));
-    render();
+    render(); collabSyncSoon();
   } else if(drag.mode === "resize"){
     const s = shapeById(drag.id); if(!s) return;
     const o = drag.orig, dir = drag.dir;
@@ -1638,6 +1812,7 @@ svg.addEventListener("pointermove", ev => {
       else { const nw = h*r; if(dir.includes("w")) x = o.x + o.w - nw; w = nw; }
     }
     Object.assign(s, {x, y, w, h});
+    collabSyncSoon();
     drag.guides = useG ? guideLines(s, drag.others).filter(g =>
       ("x" in g && (Math.abs(g.x - s.x) < .6 || Math.abs(g.x - (s.x + s.w)) < .6) && (dir.includes("e") || dir.includes("w"))) ||
       ("y" in g && (Math.abs(g.y - s.y) < .6 || Math.abs(g.y - (s.y + s.h)) < .6) && (dir.includes("n") || dir.includes("s")))) : [];
@@ -1647,7 +1822,10 @@ svg.addEventListener("pointermove", ev => {
     const r = rectFrom(drag.start, p);
     const next = new Set(drag.base);
     for(const s of doc.shapes){
-      if(s.x < r.x + r.w && s.x + s.w > r.x && s.y < r.y + r.h && s.y + s.h > r.y) next.add(s.id);
+      const hit = s.type === "frame"
+        ? s.x >= r.x && s.y >= r.y && s.x + s.w <= r.x + r.w && s.y + s.h <= r.y + r.h
+        : s.x < r.x + r.w && s.x + s.w > r.x && s.y < r.y + r.h && s.y + s.h > r.y;
+      if(hit) next.add(s.id);
     }
     for(const e of doc.edges) if(next.has(e.from) && next.has(e.to)) next.add(e.id);
     sel = next;
@@ -1671,7 +1849,7 @@ svg.addEventListener("pointermove", ev => {
       else y = snap(y);
     }
     e.points[drag.idx] = {x:Math.round(x), y:Math.round(y)};
-    render();
+    render(); collabSyncSoon();
   } else if(drag.mode === "reconnect"){
     drag.cur = p;
     const hit = document.elementFromPoint(ev.clientX, ev.clientY);
@@ -1785,7 +1963,7 @@ function positionEditor(){
     caretColor: s.textColor
   });
 }
-ta.addEventListener("input", () => { if(editingId) positionEditor(); });
+ta.addEventListener("input", () => { if(editingId){ positionEditor(); collabSyncSoon(); } });
 ta.addEventListener("blur", () => { if(editingId) finishEditing(); });
 
 function replaceRange(el, a, b, text){
@@ -1973,15 +2151,30 @@ function duplicateSelection(offset, inPlace){
   if(inPlace){ insertPayload(p, 0); render(); return; }
   mutate(() => insertPayload(p, offset));
 }
+function boxSelection(){
+  const ss = selShapes();
+  if(!ss.length){ toast("Select the shapes you want to put in a box first"); return; }
+  const u = unionRect(ss.map(effRect));
+  let f;
+  mutate(() => {
+    f = newShape("frame", 0, 0);
+    f.x = Math.floor((u.x - 28)/10)*10; f.y = Math.floor((u.y - 50)/10)*10;
+    f.w = Math.ceil((u.x + u.w + 28 - f.x)/10)*10; f.h = Math.ceil((u.y + u.h + 28 - f.y)/10)*10;
+    doc.shapes.unshift(f);
+    sel = new Set([f.id]);
+  });
+  editText(f.id, null, true);
+}
 function selectAll(){
   sel = new Set([...doc.shapes.map(s => s.id), ...doc.edges.map(e => e.id)]);
   render(); renderInspector();
 }
 function nudge(dx, dy){
-  const ss = selShapes();
+  const ss = withContents(selShapes());
   if(!ss.length) return;
   if(!nudgeBefore) nudgeBefore = snapshot();
   ss.forEach(s => { s.x += dx; s.y += dy; });
+  collabSyncSoon();
   const ids = new Set(ss.map(s => s.id));
   for(const e of doc.edges) if(e.points && ids.has(e.from) && ids.has(e.to)) e.points.forEach(q => { q.x += dx; q.y += dy; });
   render();
@@ -2185,7 +2378,7 @@ function isTyping(){
 let pasteHandled = false, cutHandled = false;
 
 document.addEventListener("keydown", ev => {
-  if($("help").open || $("aiDlg").open) return;
+  if($("help").open || $("aiDlg").open || $("shareDlg").open) return;
   if(isTyping()) return;
   const mod = ev.ctrlKey || ev.metaKey;
   const k = ev.key;
@@ -2198,6 +2391,7 @@ document.addEventListener("keydown", ev => {
     if(lk === "z"){ ev.preventDefault(); ev.shiftKey ? redo() : undo(); return; }
     if(lk === "y"){ ev.preventDefault(); redo(); return; }
     if(lk === "d"){ ev.preventDefault(); duplicateSelection(20); return; }
+    if(lk === "g"){ ev.preventDefault(); boxSelection(); return; }
     if(lk === "s"){ ev.preventDefault(); saveJSON(); return; }
     if(lk === "o"){ ev.preventDefault(); $("fileIn").click(); return; }
     if(lk === "c"){ copySelection(); return; }
@@ -2318,7 +2512,8 @@ function iconSVG(type){
     return s;
   }
   const o = outline(type, w, h);
-  for(const [tag, a] of o.main) el(tag, Object.assign({}, a, {fill:"none", stroke:"currentColor", "stroke-width":1.4, "stroke-linejoin":"round"}), s);
+  for(const [tag, a] of o.main) el(tag, Object.assign({}, a, {fill:"none", stroke:"currentColor", "stroke-width":1.4, "stroke-linejoin":"round",
+                                                            "stroke-dasharray": type === "frame" ? "3 2" : null}), s);
   for(const d of o.deco) el("path", {d, fill:"none", stroke:"currentColor", "stroke-width":1.4}, s);
   return s;
 }
@@ -2575,6 +2770,19 @@ function renderInspector(){
       ));
     }
 
+    if(ss.every(x => x.type === "frame")){
+      const op = common(ss, "fillOpacity");
+      const rng = h("input", {type:"range", min:5, max:100, step:5, value:Math.round((op == null ? .35 : op)*100), "aria-label":"Tint strength", style:"width:100%"});
+      let rb = null;
+      rng.addEventListener("input", () => { if(rb === null) rb = snapshot(); ss.forEach(x => x.fillOpacity = +rng.value/100); render(); });
+      rng.addEventListener("change", () => { if(rb === null) rb = snapshot(); commit(rb); rb = null; });
+      box.append(sec("Box",
+        h("label", {class:"check"}, h("input", {type:"checkbox", checked: ss.every(x => x.carry !== false),
+          onchange: e => mutate(() => ss.forEach(x => x.carry = e.target.checked))}), "Move what's inside with the box"),
+        lbl("Tint strength (when a fill colour is picked)"), rng,
+        h("p", {style:"margin:8px 0 0;font-size:11.5px"}, "Select a box by its border or its label. Clicks inside go to the shapes in it.")
+      ));
+    }
     box.append(sec("Arrange",
       h("div", {class:"row"},
         h("button", {class:"pill", title:`${MOD}+Shift+]`, onclick: () => reorder("front")}, "To front"),
@@ -2583,6 +2791,7 @@ function renderInspector(){
         h("button", {class:"pill", title:`${MOD}+[`, onclick: () => reorder("backward")}, "Backward"),
         h("button", {class:"pill", title:`${MOD}+Shift+[`, onclick: () => reorder("back")}, "To back")),
       h("div", {class:"row"},
+        h("button", {class:"pill", title:`${MOD}+G`, onclick: boxSelection}, "Put in a box"),
         h("button", {class:"pill", title:`${MOD}+D`, onclick: () => duplicateSelection(20)}, "Duplicate"),
         h("button", {class:"pill danger", title:"Delete", onclick: deleteSelection}, "Delete"))
     ));
@@ -2652,6 +2861,7 @@ function openFile(f){
     try{
       const nb = normalizeBook(JSON.parse(r.result));
       if(!nb) throw new Error("bad");
+      if(SYNC.on && !confirm(`You're in a live session: opening “${f.name}” replaces the diagram for everyone. Continue?`)) return;
       const b = snapshot();
       book = nb; views.clear(); syncDoc();
       sel = new Set(); commit(b);
@@ -3042,13 +3252,14 @@ function buildDiagram(d, route){
 }
 
 /* ---- editing the current canvas ---- */
+function isNode(s){ return s.type !== "text" && s.type !== "frame"; }
 function colorName(s){
   for(const k of AI_COLORS) if(AI_STYLE[k].fill.toLowerCase() === String(s.fill).toLowerCase()) return k;
   return "white";
 }
 function canvasToGraph(){
   const sent = new Map();
-  const nodes = doc.shapes.filter(s => s.type !== "text").map(s => {
+  const nodes = doc.shapes.filter(isNode).map(s => {
     const [t, ...rest] = String(s.text || "").split("\n");
     const n = {id:s.id, title:(t || "").trim(), description:rest.join(" ").trim(),
                shape: s.type === "icon" ? "icon" : (AI_SHAPES.includes(s.type) ? s.type : "rect"),
@@ -3057,14 +3268,15 @@ function canvasToGraph(){
     return n;
   });
   const edges = doc.edges.map(e => ({from:e.from, to:e.to, label:e.label || "", kind:e.kind || (e.dash === "dashed" ? "feedback" : "flow")}));
-  const b = bbox(doc.shapes.filter(s => s.type !== "text"));
+  const b = bbox(doc.shapes.filter(isNode));
   return {graph:{title:doc.name, direction: b && b.h > b.w*1.2 ? "TB" : "LR", nodes, edges}, sent};
 }
 function overlapsAny(s, others, m){
   return others.some(o => o !== s && s.x < o.x + o.w + m && s.x + s.w + m > o.x && s.y < o.y + o.h + m && s.y + s.h + m > o.y);
 }
 function applyEdit(d, sent, tidy, route){
-  const existing = new Map(doc.shapes.filter(s => s.type !== "text").map(s => [s.id, s]));
+  const existing = new Map(doc.shapes.filter(isNode).map(s => [s.id, s]));
+  const frameMembers = doc.shapes.filter(s => s.type === "frame").map(f => [f, contentsOf(f).map(c => c.id)]);
   const idMap = new Map(), keep = new Set(), fresh = [];
   for(const n of d.nodes || []){
     if(!n || !n.id || idMap.has(n.id)) continue;
@@ -3093,7 +3305,7 @@ function applyEdit(d, sent, tidy, route){
       idMap.set(n.id, ns.id); fresh.push(ns);
     }
   }
-  doc.shapes = doc.shapes.filter(s => s.type === "text" || keep.has(s.id)).concat(fresh);
+  doc.shapes = doc.shapes.filter(s => !isNode(s) || keep.has(s.id)).concat(fresh);
   const edges = [], seen = new Set();
   for(const r of d.edges || []){
     const a = idMap.get(r.from), b = idMap.get(r.to);
@@ -3109,12 +3321,19 @@ function applyEdit(d, sent, tidy, route){
   }
   doc.edges = edges;
   const LR = d.direction !== "TB";
-  const nodes = doc.shapes.filter(s => s.type !== "text");
+  const nodes = doc.shapes.filter(isNode);
   if(tidy){
     doc.edges.forEach(e => { delete e.points; delete e.fromSide; delete e.toSide; if(e.kind !== "feedback") e.route = route; });
     autoLayout(nodes, doc.edges, d.direction);
     const t = doc.shapes.find(s => s.type === "text");
     if(t) placeTitle(t, nodes, doc.edges);
+    for(const [f, ids] of frameMembers){          // boxes follow the shapes they held
+      const members = ids.map(shapeById).filter(Boolean);
+      if(!members.length) continue;
+      const u = unionRect(members.map(effRect));
+      f.x = Math.floor((u.x - 28)/10)*10; f.y = Math.floor((u.y - 50)/10)*10;
+      f.w = Math.ceil((u.x + u.w + 28 - f.x)/10)*10; f.h = Math.ceil((u.y + u.h + 28 - f.y)/10)*10;
+    }
   } else {
     const placed = nodes.filter(s => !fresh.includes(s));
     for(const s of fresh){
@@ -3274,6 +3493,503 @@ async function aiRun(){
   for(const id of ["aiPrompt","aiKey","aiCustom"]) $(id).addEventListener("keydown", e => e.stopPropagation());
 })();
 
+
+/* ================================================================ live collaboration (Firebase Realtime Database)
+   Room layout:  rooms/{room}/doc/{title, by, pages/{pid}/{meta, shapes/{id}, edges/{id}}}
+                 rooms/{room}/presence/{uid}   rooms/{room}/history/{push}   rooms/{room}/versions/{push}      */
+const FB_VERSION = "10.12.2";
+const PEER_COLORS = ["#E11D48","#2563EB","#16A34A","#D97706","#7C3AED","#0891B2","#DB2777","#65A30D"];
+const SYNC = {api:null, uid:null, on:false, ready:false, room:null, last:new Map(), lastBook:null, unsub:[],
+              me:{name:"", color:"#2563EB"}, people:new Map(), history:[], seenHist:0, connected:false,
+              soonT:null, presT:null, presRef:null, lastSelKey:"", flash:null, prefix:""};
+const sharingConfigured = () => !!(window.FLOWCHART_FIREBASE && window.FLOWCHART_FIREBASE.databaseURL);
+
+function myName(){
+  let n = ""; try{ n = localStorage.getItem("flowchart-name") || ""; }catch(e){}
+  if(!n){ n = "Guest " + (100 + Math.floor(Math.random()*900)); try{ localStorage.setItem("flowchart-name", n); }catch(e){} }
+  return n;
+}
+function colorFor(id){ let h = 0; for(const c of String(id)) h = (h*31 + c.charCodeAt(0)) >>> 0; return PEER_COLORS[h % PEER_COLORS.length]; }
+function initials(n){ return String(n || "?").trim().split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase(); }
+function roomFromHash(){ const m = /[#&]room=([A-Za-z0-9_-]{8,40})/.exec(location.hash); return m ? m[1] : null; }
+function newRoomId(){
+  const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789", a = new Uint8Array(14);
+  crypto.getRandomValues(a); return [...a].map(x => abc[x % abc.length]).join("");
+}
+function shareLink(){ return location.origin + location.pathname + "#room=" + SYNC.room; }
+
+async function initFirebase(){
+  if(SYNC.api) return SYNC.api;
+  if(!sharingConfigured()) throw {code:"noconfig"};
+  const base = `https://www.gstatic.com/firebasejs/${FB_VERSION}/`;
+  let appM, authM, dbM;
+  try{ [appM, authM, dbM] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-database.js")]); }
+  catch(e){ throw {code:"load"}; }
+  const app = appM.initializeApp(window.FLOWCHART_FIREBASE);
+  const auth = authM.getAuth(app);
+  const cred = await authM.signInAnonymously(auth);
+  SYNC.uid = cred.user.uid;
+  SYNC.api = Object.assign({}, dbM, {db: dbM.getDatabase(app)});
+  return SYNC.api;
+}
+function collabErrorText(e){
+  const c = (e && (e.code || e.message)) || "";
+  if(c === "noconfig") return "Live sharing isn't set up for this copy yet.";
+  if(c === "load") return "Couldn't load the sharing library. Check your internet connection.";
+  if(/operation-not-allowed|admin-restricted/.test(c)) return "Turn on Anonymous sign-in in Firebase: Authentication → Sign-in method → Anonymous.";
+  if(/PERMISSION_DENIED|permission/i.test(c)) return "The database refused access. Check the database rules (see README).";
+  if(/network/i.test(c)) return "Network problem while connecting. Check your connection and try again.";
+  return "Couldn't connect to the live session" + (c ? ` (${c})` : "") + ".";
+}
+
+/* ---- document <-> database ---- */
+function cleanObj(o){
+  const c = {};
+  for(const k in o){ const v = o[k]; if(v === undefined || v === null || k[0] === "_" || (Array.isArray(v) && !v.length)) continue; c[k] = v; }
+  return JSON.parse(JSON.stringify(c));
+}
+function flatten(bk){
+  const m = new Map(), put = (p, v) => m.set(p, {v, j:stable(v)});
+  put("doc/title", bk.title || "Untitled diagram");
+  bk.pages.forEach((pg, i) => {
+    put(`doc/pages/${pg.id}/meta`, {name:pg.name || "Canvas", page:pg.page || "#FFFFFF", order:i});
+    pg.shapes.forEach((sh, z) => put(`doc/pages/${pg.id}/shapes/${sh.id}`, Object.assign(cleanObj(sh), {z})));
+    pg.edges.forEach(e => put(`doc/pages/${pg.id}/edges/${e.id}`, cleanObj(e)));
+  });
+  return m;
+}
+function treeFrom(bk){
+  const t = {};
+  for(const [p, x] of flatten(bk)){
+    const parts = p.split("/").slice(1); let o = t;
+    for(let i = 0; i < parts.length - 1; i++) o = o[parts[i]] = o[parts[i]] || {};
+    o[parts[parts.length - 1]] = x.v;
+  }
+  return t;
+}
+function remoteToBook(d){
+  if(!d || !d.pages) return null;
+  const pages = Object.entries(d.pages).filter(([, pg]) => pg && pg.meta).map(([pid, pg]) => ({
+    id:pid, name:pg.meta.name || "Canvas", page:pg.meta.page || "#FFFFFF", _o:pg.meta.order || 0,
+    shapes:Object.values(pg.shapes || {}).filter(x => x && x.id).sort((a, b) => (a.z || 0) - (b.z || 0)).map(x => { const c = Object.assign({}, x); delete c.z; return c; }),
+    edges:Object.values(pg.edges || {}).filter(x => x && x.id)
+  })).sort((a, b) => a._o - b._o);
+  pages.forEach(pg => delete pg._o);
+  if(!pages.length) return null;
+  return {format:"flowchart-book", version:2, title:d.title || "Untitled diagram", active:pages[0].id, pages};
+}
+function contentStr(bk){ return JSON.stringify({title:bk.title, pages:bk.pages}); }
+
+function collabSyncNow(){
+  if(!SYNC.on || !SYNC.ready) return;
+  clearTimeout(SYNC.soonT); SYNC.soonT = null;
+  const cur = flatten(book), last = SYNC.last, up = {}, base = `rooms/${SYNC.room}/`;
+  const gone = new Set();
+  for(const [p] of last){ const m = /^doc\/pages\/([^/]+)\/meta$/.exec(p); if(m && !cur.has(p)) gone.add(m[1]); }
+  for(const pid of gone) up[base + "doc/pages/" + pid] = null;
+  for(const [p, x] of cur){ const l = last.get(p); if(!l || l.j !== x.j) up[base + p] = x.v; }
+  for(const [p] of last){
+    if(cur.has(p)) continue;
+    const m = /^doc\/pages\/([^/]+)\//.exec(p);
+    if(m && gone.has(m[1])) continue;
+    up[base + p] = null;
+  }
+  if(!Object.keys(up).length) return;
+  up[base + "doc/by"] = {uid:SYNC.uid, name:SYNC.me.name, color:SYNC.me.color, t:SYNC.api.serverTimestamp()};
+  SYNC.last = cur; SYNC.lastBook = contentStr(book);
+  SYNC.api.update(SYNC.api.ref(SYNC.api.db), up).catch(err => toast(collabErrorText(err)));
+}
+function collabSyncSoon(){ if(SYNC.on && SYNC.ready && !SYNC.soonT) SYNC.soonT = setTimeout(collabSyncNow, 120); }
+
+function collabApply(val){
+  const first = !SYNC.ready;
+  const rb = remoteToBook(val);
+  if(!rb){
+    if(first){ SYNC.ready = true; SYNC.last = new Map(); collabSyncNow(); toast("Started the live session"); }
+    return;
+  }
+  const server = flatten(rb), serverBook = contentStr(rb);
+  SYNC.ready = true;
+  const local = flatten(book);
+  let same = local.size === server.size;
+  if(same) for(const [p, x] of server){ const l = local.get(p); if(!l || l.j !== x.j){ same = false; break; } }
+  const prevServer = SYNC.lastBook;
+  SYNC.last = server; SYNC.lastBook = serverBook;
+  if(same) return;
+
+  // things the local person is touching right now stay as they are locally
+  const keepS = new Set(), keepE = new Set();
+  if(drag){
+    if(drag.orig) for(const id of drag.orig.keys()) keepS.add(id);
+    if(drag.mode === "resize") keepS.add(drag.id);
+    if(drag.mode === "wp" || drag.mode === "reconnect") keepE.add(drag.id);
+    for(const bd of drag.bends || []) keepE.add(bd.e.id);
+  }
+  if(editingId) keepS.add(editingId);
+  if(editingLabel) keepE.add(editingLabel);
+  if(nudgeBefore) selShapes().forEach(x => keepS.add(x.id));
+  const changed = [];
+  for(const pg of rb.pages){
+    const loc = book.pages.find(x => x.id === pg.id);
+    if(!loc) continue;
+    for(const [key, keep] of [["shapes", keepS], ["edges", keepE]]){
+      pg[key] = pg[key].map(o => keep.has(o.id) ? (loc[key].find(x => x.id === o.id) || o) : o);
+      for(const id of keep) if(!pg[key].some(o => o.id === id)){ const l = loc[key].find(x => x.id === id); if(l) pg[key].push(l); }
+    }
+    if(pg.id === book.active && !first){
+      const bs = new Map(loc.shapes.map(x => [x.id, stable(x)]));
+      for(const x of pg.shapes) if(!keepS.has(x.id) && bs.get(x.id) !== stable(x)) changed.push(x.id);
+      const be = new Map(loc.edges.map(x => [x.id, stable(x)]));
+      for(const x of pg.edges) if(!keepE.has(x.id) && be.get(x.id) !== stable(x)) changed.push(x.from, x.to);
+    }
+  }
+  // pending "before" snapshots must include the collaborator's change, or undo would revert it
+  if(prevServer && !first){
+    const rebase = str => { if(!str) return str; const t = JSON.parse(str); applyPatchTo(t, prevServer, serverBook); return JSON.stringify(t); };
+    if(drag && drag.before) drag.before = rebase(drag.before);
+    if(editBefore) editBefore = rebase(editBefore);
+    if(labelBefore) labelBefore = rebase(labelBefore);
+    if(nudgeBefore) nudgeBefore = rebase(nudgeBefore);
+  }
+  rb.active = rb.pages.some(x => x.id === book.active) ? book.active : rb.pages[0].id;
+  book = rb; syncDoc();
+  if(first){ undoStack.length = 0; redoStack.length = 0; updateButtons(); }
+  const ids = new Set([...doc.shapes.map(x => x.id), ...doc.edges.map(x => x.id)]);
+  sel = new Set([...sel].filter(id => ids.has(id)));
+  if(document.activeElement !== $("title")) $("title").value = book.title || "Untitled diagram";
+  scheduleSave();
+  if(first){ views.clear(); fit(); toast("Joined the live session"); }
+  else render();
+  renderTabs(); safeInspector();
+  if(!first && changed.length && val.by && val.by.uid !== SYNC.uid) flashChanges(changed, val.by);
+}
+
+/* ---- presence: who's here, where they point, what they've selected ---- */
+function presenceSoon(){ if(SYNC.on && SYNC.ready && !SYNC.presT) SYNC.presT = setTimeout(presenceNow, 90); }
+let cursorWorld = null;
+function presenceNow(){
+  SYNC.presT = null;
+  if(!SYNC.on || !SYNC.presRef) return;
+  const d = {name:SYNC.me.name, color:SYNC.me.color, page:doc.id, sel:[...sel].slice(0, 40), t:SYNC.api.serverTimestamp()};
+  if(cursorWorld){ d.x = Math.round(cursorWorld.x); d.y = Math.round(cursorWorld.y); }
+  SYNC.api.set(SYNC.presRef, d).catch(() => {});
+}
+stage.addEventListener("pointermove", ev => { if(!SYNC.on) return; cursorWorld = toWorld(ev); presenceSoon(); });
+stage.addEventListener("pointerleave", () => { if(!SYNC.on) return; cursorWorld = null; presenceSoon(); });
+function onPresence(val){
+  SYNC.people = new Map(Object.entries(val || {}).filter(([uid, pp]) => uid !== SYNC.uid && pp && pp.name));
+  renderPeople(); renderPeers(); renderShareButton();
+}
+function renderPeople(){
+  const box = $("people");
+  box.innerHTML = "";
+  if(!SYNC.on) return;
+  const all = [[SYNC.uid, SYNC.me, true], ...[...SYNC.people].map(([u, pp]) => [u, pp, false])];
+  all.slice(0, 5).forEach(([u, pp, me]) => box.append(h("span", {class:"av" + (me ? " me" : ""), style:`background:${pp.color}`,
+    title: me ? `${pp.name} (you)` : pp.name}, initials(pp.name))));
+  if(all.length > 5) box.append(h("span", {class:"av more", title:all.slice(5).map(x => x[1].name).join(", ")}, "+" + (all.length - 5)));
+}
+function collabAfterRender(){
+  if(!SYNC.on) return;
+  const key = [...sel].join(",") + "|" + doc.id;
+  if(key !== SYNC.lastSelKey){ SYNC.lastSelKey = key; presenceSoon(); }
+  renderPeers();
+}
+function renderPeers(){
+  const g = $("peers"), curs = $("cursors");
+  g.setAttribute("transform", `translate(${view.tx},${view.ty}) scale(${view.k})`);
+  while(g.firstChild) g.removeChild(g.firstChild);
+  curs.innerHTML = "";
+  if(!SYNC.on) return;
+  const k = view.k;
+  for(const [, pp] of SYNC.people){
+    if(pp.page !== doc.id) continue;
+    for(const id of pp.sel || []){
+      const sh = shapeById(id);
+      if(!sh) continue;
+      el("rect", {x:sh.x - 5/k, y:sh.y - 5/k, width:sh.w + 10/k, height:sh.h + 10/k, rx:4/k, fill:"none", stroke:pp.color, "stroke-width":2/k}, g);
+      const tw = measure(pp.name, `600 11px ${FONT}`) + 12;
+      el("rect", {x:sh.x - 5/k, y:sh.y - 5/k - 18/k, width:tw/k, height:16/k, rx:3/k, fill:pp.color}, g);
+      const t = el("text", {x:sh.x - 5/k + 6/k, y:sh.y - 5/k - 6/k, "font-size":11/k, "font-weight":600, fill:"#fff", "font-family":FONT}, g);
+      t.textContent = pp.name;
+    }
+    if(pp.x != null && pp.y != null){
+      const c = h("div", {class:"cur", style:`left:${view.tx + pp.x*k}px;top:${view.ty + pp.y*k}px`});
+      c.innerHTML = `<svg viewBox="0 0 18 18"><path d="M2 2 L2 15 L6 11.5 L8.6 16.6 L11 15.4 L8.5 10.4 L13.6 10.2 Z" fill="${pp.color}" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+      c.append(h("span", {style:`background:${pp.color}`}, pp.name));
+      curs.append(c);
+    }
+  }
+  const f = SYNC.flash;
+  if(f && Date.now() < f.until){
+    const a = Math.max(0, (f.until - Date.now())/2600);
+    for(const id of f.ids){
+      const sh = shapeById(id);
+      if(!sh) continue;
+      el("rect", {x:sh.x - 7/k, y:sh.y - 7/k, width:sh.w + 14/k, height:sh.h + 14/k, rx:8/k, fill:f.color, "fill-opacity":.10*a,
+                  stroke:f.color, "stroke-width":3/k, "stroke-opacity":a}, g);
+    }
+  }
+}
+function flashChanges(ids, by){
+  SYNC.flash = {ids:new Set(ids), color:by.color || "#2563EB", until:Date.now() + 2600};
+  const step = () => { renderPeers(); if(SYNC.flash && Date.now() < SYNC.flash.until) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+/* ---- activity feed ---- */
+function shapeLabel(o){
+  const t = String(o.text || "").split("\n")[0].trim();
+  if(t) return "“" + (t.length > 26 ? t.slice(0, 25) + "…" : t) + "”";
+  return "a " + ((o.type === "icon" && ICON_BY[o.icon]) ? ICON_BY[o.icon].name.toLowerCase() + " icon" : (TYPES[o.type] || {name:"shape"}).name.toLowerCase());
+}
+function describeChange(bStr, aStr){
+  const B = indexBook(JSON.parse(bStr)), A = indexBook(JSON.parse(aStr));
+  const added = [], removed = [], edited = [];
+  let moved = 0, styled = 0, eAdd = 0, eDel = 0, eChg = 0, page = null;
+  for(const key of new Set([...B.objs.keys(), ...A.objs.keys()])){
+    const f = B.objs.get(key), t = A.objs.get(key);
+    if((f && f.j) === (t && t.j)) continue;
+    const [kind, pid] = key.split("|");
+    page = page || pid;
+    if(kind === "s"){
+      if(!f) added.push(shapeLabel(t.o));
+      else if(!t) removed.push(shapeLabel(f.o));
+      else {
+        const geo = ["x","y","w","h"];
+        if(f.o.text !== t.o.text) edited.push(shapeLabel(t.o));
+        else if(Object.keys(Object.assign({}, f.o, t.o)).some(k => !geo.includes(k) && k !== "text" && stable(f.o[k]) !== stable(t.o[k]))) styled++;
+        else moved++;
+      }
+    } else { if(!f) eAdd++; else if(!t) eDel++; else eChg++; }
+  }
+  const parts = [];
+  const list = arr => arr.length <= 2 ? arr.join(" and ") : `${arr.length} shapes`;
+  const n = (k, one, many) => k === 1 ? one : `${k} ${many}`;
+  for(const pid of new Set([...B.pages.keys(), ...A.pages.keys()])){
+    const f = B.pages.get(pid), t = A.pages.get(pid);
+    if(!f && t){ parts.push(`added the canvas “${t.name}”`); page = pid; }
+    else if(f && !t) parts.push(`deleted the canvas “${f.name}”`);
+    else if(f.name !== t.name){ parts.push(`renamed a canvas to “${t.name}”`); page = page || pid; }
+    else if(f.page !== t.page){ parts.push(`changed the background of “${t.name}”`); page = page || pid; }
+  }
+  if(B.title !== A.title) parts.push(`renamed the file to “${A.title}”`);
+  if(added.length) parts.push("added " + list(added));
+  if(removed.length) parts.push("deleted " + list(removed));
+  if(edited.length) parts.push("edited " + list(edited));
+  if(moved) parts.push("moved " + n(moved, "a shape", "shapes"));
+  if(styled) parts.push("restyled " + n(styled, "a shape", "shapes"));
+  if(eAdd) parts.push("added " + n(eAdd, "a connector", "connectors"));
+  if(eDel) parts.push("removed " + n(eDel, "a connector", "connectors"));
+  if(eChg && !moved) parts.push("changed " + n(eChg, "a connector", "connectors"));
+  if(!parts.length) return null;
+  const pg = A.pages.get(page) || B.pages.get(page);
+  let text = parts.slice(0, 3).join(", ");
+  if(pg && A.pages.size > 1 && !/canvas/.test(text)) text += ` on “${pg.name}”`;
+  return {text, page};
+}
+function collabRecord(before, after, prefix){
+  if(!SYNC.on || !SYNC.ready) return;
+  const d = describeChange(before, after);
+  if(!d) return;
+  const text = (SYNC.prefix || prefix || "") + d.text;
+  SYNC.prefix = "";
+  SYNC.api.push(SYNC.api.ref(SYNC.api.db, `rooms/${SYNC.room}/history`),
+    {t:SYNC.api.serverTimestamp(), uid:SYNC.uid, name:SYNC.me.name, color:SYNC.me.color, text, page:d.page || ""}).catch(() => {});
+}
+function onHistory(val){
+  SYNC.history = Object.entries(val || {}).sort((a, b) => a[0] < b[0] ? -1 : 1).map(([k, v]) => Object.assign({k}, v));
+  const panelOpen = !$("activity").hidden;
+  if(panelOpen) SYNC.seenHist = SYNC.history.length ? SYNC.history[SYNC.history.length - 1].k : 0;
+  renderActivity();
+}
+function ago(t){
+  if(!t) return "just now";
+  const s = Math.max(0, (Date.now() - t)/1000);
+  if(s < 45) return "just now";
+  if(s < 3600) return Math.round(s/60) + " min ago";
+  if(s < 86400) return Math.round(s/3600) + " h ago";
+  return new Date(t).toLocaleDateString();
+}
+function renderActivity(){
+  const list = $("actList");
+  const unseen = SYNC.history.filter(x => x.uid !== SYNC.uid && (!SYNC.seenHist || x.k > SYNC.seenHist)).length;
+  $("actBadge").hidden = !unseen || !$("activity").hidden;
+  $("actBadge").textContent = unseen > 99 ? "99+" : String(unseen);
+  if($("activity").hidden) return;
+  list.innerHTML = "";
+  if(!SYNC.history.length){ list.append(h("div", {class:"act-empty"}, "No changes yet. Everything anyone changes in this session appears here.")); return; }
+  for(const x of [...SYNC.history].reverse()){
+    const pg = book.pages.find(p => p.id === x.page);
+    list.append(h("button", {class:"act-item", title: pg ? `Go to “${pg.name}”` : "", onclick: () => { if(pg) switchCanvas(pg.id); }},
+      h("i", {style:`background:${x.color || "#9CA3AF"}`}),
+      h("span", null, h("b", null, x.uid === SYNC.uid ? "You" : x.name), " " + x.text, h("small", null, ago(x.t)))));
+  }
+}
+function toggleActivity(show){
+  const a = $("activity");
+  a.hidden = show === undefined ? !a.hidden : !show;
+  if(!a.hidden && SYNC.history.length) SYNC.seenHist = SYNC.history[SYNC.history.length - 1].k;
+  renderActivity();
+}
+setInterval(() => { if(SYNC.on && !$("activity").hidden) renderActivity(); }, 30000);
+
+/* ---- session lifecycle ---- */
+async function connectRoom(room, create){
+  let api;
+  try{ api = await initFirebase(); }
+  catch(e){ toast(collabErrorText(e)); if($("shareDlg").open) renderShare(collabErrorText(e)); return false; }
+  if(SYNC.on) leaveSession(true);
+  if(!create){ try{ if(!localStorage.getItem(BACKUP_KEY)) localStorage.setItem(BACKUP_KEY, snapshot()); }catch(e){} }
+  Object.assign(SYNC, {on:true, room, ready:false, last:new Map(), lastBook:null, history:[], seenHist:0, lastSelKey:""});
+  SYNC.me = {name:myName(), color:colorFor(SYNC.uid)};
+  const base = `rooms/${room}`;
+  try{
+    if(create) await api.set(api.ref(api.db, base + "/doc"), treeFrom(book));
+  }catch(e){ SYNC.on = false; toast(collabErrorText(e)); if($("shareDlg").open) renderShare(collabErrorText(e)); return false; }
+  SYNC.presRef = api.ref(api.db, `${base}/presence/${SYNC.uid}`);
+  try{ api.onDisconnect(SYNC.presRef).remove(); }catch(e){}
+  SYNC.unsub.push(api.onValue(api.ref(api.db, base + "/doc"), snap => collabApply(snap.val()), err => toast(collabErrorText(err))));
+  SYNC.unsub.push(api.onValue(api.ref(api.db, base + "/presence"), snap => onPresence(snap.val())));
+  SYNC.unsub.push(api.onValue(api.query(api.ref(api.db, base + "/history"), api.limitToLast(80)), snap => onHistory(snap.val())));
+  SYNC.unsub.push(api.onValue(api.ref(api.db, ".info/connected"), snap => { SYNC.connected = !!snap.val(); renderShareButton(); }));
+  if(location.hash.indexOf("room=" + room) < 0) history.replaceState(null, "", "#room=" + room);
+  renderShareButton(); renderPeople();
+  setTimeout(presenceNow, 300);
+  return true;
+}
+const BACKUP_KEY = "flowchart-editor-before-session";
+function leaveSession(silent, restoreOwn){
+  for(const u of SYNC.unsub){ try{ u(); }catch(e){} }
+  SYNC.unsub = [];
+  if(SYNC.presRef){ try{ SYNC.api.onDisconnect(SYNC.presRef).cancel(); SYNC.api.set(SYNC.presRef, null); }catch(e){} }
+  Object.assign(SYNC, {on:false, ready:false, room:null, presRef:null, people:new Map(), history:[], flash:null});
+  if(location.hash) history.replaceState(null, "", location.pathname + location.search);
+  if(restoreOwn){
+    try{
+      const raw = localStorage.getItem(BACKUP_KEY);
+      const nb = raw && normalizeBook(JSON.parse(raw));
+      if(nb){ book = nb; views.clear(); syncDoc(); sel = new Set(); undoStack.length = 0; redoStack.length = 0; $("title").value = book.title; scheduleSave(); fit(); }
+    }catch(e){}
+  }
+  try{ localStorage.removeItem(BACKUP_KEY); }catch(e){}
+  toggleActivity(false);
+  renderShareButton(); renderPeople(); renderPeers(); render(); renderTabs(); safeInspector(); updateButtons();
+  if(!silent) toast(restoreOwn ? "Left the session — your own diagrams are back" : "Left the session — you kept a copy");
+}
+function renderShareButton(){
+  const dot = $("liveDot");
+  dot.className = "live-dot" + (SYNC.on ? (SYNC.connected ? " on" : " wait") : "");
+  $("shareLbl").textContent = SYNC.on ? (SYNC.connected ? `Live · ${SYNC.people.size + 1}` : "Reconnecting…") : "Share";
+  $("bActivity").hidden = !SYNC.on;
+}
+
+/* ---- share dialog ---- */
+function renderShare(errText){
+  const body = $("shareBody");
+  body.innerHTML = "";
+  if(errText) body.append(h("div", {class:"warnbox", style:"border-color:var(--danger);color:var(--danger)"}, errText));
+  if(!sharingConfigured()){
+    body.append(
+      h("p", {class:"ai-note", style:"font-size:13px;color:var(--txt)"}, "Live sharing isn't switched on for this copy yet. Whoever hosts the editor sets it up once, then everyone opening the page can share."),
+      h("ol", {class:"steps"},
+        h("li", null, "Create a free Firebase project and a Realtime Database."),
+        h("li", null, "Turn on Anonymous sign-in, and paste the database rules from database.rules.json."),
+        h("li", null, "Put the project's web config into config.js and upload it next to index.html.")),
+      h("p", {class:"ai-note"}, "Full steps are in README.md. Until then you can share by Save, then send the .json file — others use Open."));
+    return;
+  }
+  const nameIn = h("input", {type:"text", class:"field", value:myName(), maxlength:32, "aria-label":"Your name"});
+  nameIn.addEventListener("change", () => {
+    const v = nameIn.value.trim().slice(0, 32) || myName();
+    try{ localStorage.setItem("flowchart-name", v); }catch(e){}
+    SYNC.me.name = v; renderPeople(); presenceSoon();
+  });
+  nameIn.addEventListener("keydown", e => e.stopPropagation());
+  if(!SYNC.on){
+    body.append(
+      h("label", {class:"lbl"}, "Your name, as others will see it"), nameIn,
+      h("p", {class:"ai-note", style:"font-size:12.5px"}, "Starting a live session uploads this file and gives you a private link. Anyone with the link can see and edit it, and everyone sees changes as they happen. Your OpenAI key is never shared."),
+      location.protocol === "file:" ? h("div", {class:"warnbox"}, "You're opening the editor from a file on your computer, so the link will only work for you. Share the GitHub Pages address instead.") : null,
+      h("div", {class:"ai-foot"}, h("span", {id:"aiStatus"}), h("button", {class:"btn primary", onclick: async e => {
+        e.target.disabled = true; e.target.textContent = "Starting…";
+        nameIn.dispatchEvent(new Event("change"));
+        const ok = await connectRoom(newRoomId(), true);
+        if(ok){ renderShare(); copyLink(); } else e.target.disabled = false;
+      }}, "Start live session")));
+    return;
+  }
+  const link = h("input", {type:"text", class:"field", value:shareLink(), readonly:true, "aria-label":"Share link"});
+  const people = h("div", {class:"plist"},
+    h("div", {class:"prow"}, h("span", {class:"av me", style:`background:${SYNC.me.color}`}, initials(SYNC.me.name)), `${SYNC.me.name} (you)`),
+    ...[...SYNC.people.values()].map(pp => h("div", {class:"prow"}, h("span", {class:"av", style:`background:${pp.color}`}, initials(pp.name)),
+      pp.name, h("small", {style:"color:var(--dim)"}, pp.page === doc.id ? "· on this canvas" : ""))));
+  const vName = h("input", {type:"text", class:"field", placeholder:"Version name, e.g. Before client review", "aria-label":"Version name"});
+  vName.addEventListener("keydown", e => e.stopPropagation());
+  const vlist = h("div", {class:"vlist"}, h("small", {style:"color:var(--dim)"}, "Loading versions…"));
+  body.append(
+    h("label", {class:"lbl"}, "Anyone with this link can see and edit"),
+    h("div", {class:"share-link"}, link, h("button", {class:"btn primary", onclick:copyLink}, "Copy link")),
+    h("label", {class:"lbl"}, "Your name"), nameIn,
+    h("label", {class:"lbl"}, `In this session (${SYNC.people.size + 1})`), people,
+    h("label", {class:"lbl"}, "Versions"),
+    h("div", {class:"share-link"}, vName, h("button", {class:"pill", onclick: () => saveVersion(vName.value.trim(), vlist)}, "Save version")),
+    vlist,
+    h("div", {class:"ai-foot"},
+      h("span", {style:"flex:1"}),
+      h("button", {class:"pill", onclick: () => { $("shareDlg").close(); leaveSession(false, true); }}, "Leave, restore my diagrams"),
+      h("button", {class:"pill", onclick: () => { $("shareDlg").close(); leaveSession(false, false); }}, "Leave, keep a copy")));
+  loadVersions(vlist);
+}
+async function copyLink(){
+  try{ await navigator.clipboard.writeText(shareLink()); toast("Link copied — send it to anyone who should join"); }
+  catch(e){ toast("Select the link and copy it"); }
+}
+async function saveVersion(label, vlist){
+  if(!SYNC.on) return;
+  const name = label || new Date().toLocaleString();
+  await SYNC.api.push(SYNC.api.ref(SYNC.api.db, `rooms/${SYNC.room}/versions`),
+    {t:SYNC.api.serverTimestamp(), uid:SYNC.uid, who:SYNC.me.name, label:name, data:snapshot()});
+  SYNC.api.push(SYNC.api.ref(SYNC.api.db, `rooms/${SYNC.room}/history`),
+    {t:SYNC.api.serverTimestamp(), uid:SYNC.uid, name:SYNC.me.name, color:SYNC.me.color, text:`saved the version “${name}”`, page:""});
+  toast(`Saved version “${name}”`);
+  loadVersions(vlist);
+}
+async function loadVersions(vlist){
+  if(!SYNC.on || !vlist) return;
+  try{
+    const snap = await SYNC.api.get(SYNC.api.query(SYNC.api.ref(SYNC.api.db, `rooms/${SYNC.room}/versions`), SYNC.api.limitToLast(20)));
+    const rows = Object.entries(snap.val() || {}).sort((a, b) => a[0] < b[0] ? 1 : -1);
+    vlist.innerHTML = "";
+    if(!rows.length){ vlist.append(h("small", {style:"color:var(--dim)"}, "No saved versions yet. Save one before big changes so you can go back.")); return; }
+    for(const [, v] of rows){
+      vlist.append(h("div", {class:"vrow"}, h("span", {title:v.label}, v.label), h("small", null, `${v.who || ""} · ${ago(v.t)}`),
+        h("button", {class:"pill", onclick: () => restoreVersion(v)}, "Restore")));
+    }
+  }catch(e){ vlist.innerHTML = ""; vlist.append(h("small", {style:"color:var(--danger)"}, "Couldn't load versions.")); }
+}
+function restoreVersion(v){
+  if(!confirm(`Restore “${v.label}” for everyone in this session? Anyone can undo it with ${MOD}+Z, or restore another version.`)) return;
+  const nb = normalizeBook(JSON.parse(v.data));
+  if(!nb) return;
+  const b = snapshot();
+  nb.active = nb.pages.some(p => p.id === book.active) ? book.active : nb.pages[0].id;
+  book = nb; syncDoc(); sel = new Set();
+  SYNC.prefix = `restored the version “${v.label}”: `;
+  commit(b);
+  $("shareDlg").close();
+  render(); renderTabs(); safeInspector();
+  toast(`Restored “${v.label}”`);
+}
+$("bShare").onclick = () => { renderShare(); $("shareDlg").showModal(); };
+$("shareClose").onclick = () => $("shareDlg").close();
+$("bActivity").onclick = () => toggleActivity();
+$("actClose").onclick = () => toggleActivity(false);
+window.addEventListener("hashchange", () => {
+  const r = roomFromHash();
+  if(r && r !== SYNC.room) connectRoom(r, false);
+});
+
 /* ================================================================ header wiring */
 $("title").addEventListener("change", e => mutate(() => book.title = e.target.value.trim() || "Untitled diagram"));
 $("title").addEventListener("keydown", e => { if(e.key === "Enter") e.target.blur(); });
@@ -3281,6 +3997,7 @@ $("newMenu").addEventListener("change", e => {
   const v = e.target.value; e.target.value = "";
   if(!v) return;
   if(v === "file"){
+    if(SYNC.on && !confirm("You're in a live session: this replaces the diagram for everyone. Continue?")) return;
     if(!confirm("Start a new file? Everything here is replaced — save first if you want to keep it. You can also undo with " + MOD + "+Z.")) return;
     leaveCanvas();
     const b = snapshot();
@@ -3294,6 +4011,7 @@ $("newMenu").addEventListener("change", e => {
   addCanvas(t, t ? t.title : null);
 });
 $("bOpen").onclick = () => $("fileIn").click();
+$("exportMenu").addEventListener("change", e => { const v = e.target.value; e.target.value = ""; if(v === "svg") $("bSvg").click(); if(v === "png") $("bPng").click(); });
 $("bSave").onclick = saveJSON;
 $("bUndo").onclick = undo;
 $("bRedo").onclick = redo;
@@ -3314,6 +4032,21 @@ $("bSnap").onclick = () => { snapOn = !snapOn; syncToggles(); renderInspector();
 $("bGuides").onclick = () => { guidesOn = !guidesOn; syncToggles(); renderInspector(); };
 $("bHand").onclick = () => { handTool = !handTool; syncToggles(); };
 $("bMap").onclick = () => { showMap = !showMap; syncToggles(); render(); };
+$("bView").onclick = e => {
+  e.stopPropagation();
+  if(menuEl){ closeMenu(); return; }
+  const item = (label, on, btn) => {
+    const cb = h("input", {type:"checkbox", checked:on});
+    cb.addEventListener("change", () => $(btn).click());
+    return h("label", null, cb, label);
+  };
+  menuEl = h("div", {class:"menu", role:"menu"},
+    item("Show grid", showGrid, "bGrid"), item("Snap to grid", snapOn, "bSnap"),
+    item("Smart alignment guides", guidesOn, "bGuides"), item("Minimap", showMap, "bMap"));
+  document.body.append(menuEl);
+  const r = $("bView").getBoundingClientRect();
+  menuEl.style.left = r.left + "px"; menuEl.style.top = (r.bottom + 4) + "px";
+};
 
 const toastEl = $("toast"); let toastT;
 function toast(msg){
@@ -3326,6 +4059,7 @@ const SHORTCUTS = [
   ["Editing", [
     [`${MOD} C / X / V`, "Copy, cut, paste"],
     [`${MOD} D`, "Duplicate"],
+    [`${MOD} G`, "Put selection in a box"],
     ["Alt + drag", "Duplicate while dragging"],
     [`${MOD} A`, "Select everything"],
     [`${MOD} Z`, "Undo"],
@@ -3353,6 +4087,12 @@ const SHORTCUTS = [
     ["Alt while moving", "Ignore grid and guides"],
     [`${MOD} ] / [`, "Forward / backward"],
     [`${MOD} Shift ] / [`, "To front / to back"]
+  ]],
+  ["Working together", [
+    ["Share", "Start a live session, copy the link"],
+    ["Activity", "See who changed what"],
+    ["Share → Versions", "Save and restore versions"],
+    [`${MOD} Z`, "Undoes only your own changes"]
   ]],
   ["AI", [
     ["Generate with AI", "Describe it, get a diagram"],
@@ -3414,6 +4154,11 @@ syncToggles();
 updateButtons();
 requestAnimationFrame(() => { fit(); renderInspector(); });
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
+renderShareButton();
+if(roomFromHash()){
+  if(sharingConfigured()) connectRoom(roomFromHash(), false);
+  else setTimeout(() => toast("This is a live-session link, but sharing isn't set up on this copy of the editor"), 800);
+}
 window.addEventListener("resize", () => render());
 })();
 </script>

@@ -1,0 +1,12 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rooms": {
+      "$room": {
+        ".read": "auth != null && $room.matches(/^[A-Za-z0-9_-]{8,40}$/)",
+        ".write": "auth != null && $room.matches(/^[A-Za-z0-9_-]{8,40}$/)"
+      }
+    }
+  }
+}
